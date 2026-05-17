@@ -8,7 +8,7 @@ Open this userscript URL after the repository is pushed:
 
 https://raw.githubusercontent.com/museova/mermaid-live-paste-cleaner/main/mermaid-live-paste-cleaner.user.js
 
-Tampermonkey should detect it and show the install screen.
+Tampermonkey should detect it and show the install screen. The userscript metadata includes `@updateURL` and `@downloadURL`, so future versions can be pulled from this repository automatically.
 
 ## What It Does
 

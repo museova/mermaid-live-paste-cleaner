@@ -1,10 +1,14 @@
 // ==UserScript==
 // @name         Mermaid Live Paste Cleaner
 // @namespace    https://mermaid.live/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Strip Markdown ```mermaid fences when pasting into Mermaid Live Editor.
 // @author       Codex
 // @match        https://mermaid.live/*
+// @homepageURL  https://github.com/museova/mermaid-live-paste-cleaner
+// @supportURL   https://github.com/museova/mermaid-live-paste-cleaner/issues
+// @updateURL    https://raw.githubusercontent.com/museova/mermaid-live-paste-cleaner/main/mermaid-live-paste-cleaner.user.js
+// @downloadURL  https://raw.githubusercontent.com/museova/mermaid-live-paste-cleaner/main/mermaid-live-paste-cleaner.user.js
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
