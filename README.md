@@ -36,3 +36,11 @@ If the pasted text does not have a ` ```mermaid` opening fence and a closing ` `
 - Handles `mermaid` case-insensitively
 - Supports Unix and Windows newlines
 - Does not rewrite the system clipboard
+
+## Verify
+
+Run the dependency-free test suite with:
+
+```sh
+node --test test/*.test.js
+```

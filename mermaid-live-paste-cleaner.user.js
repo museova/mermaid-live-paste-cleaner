@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mermaid Live Paste Cleaner
 // @namespace    https://mermaid.live/
-// @version      1.0.1
+// @version      1.1.0
 // @description  Strip Markdown ```mermaid fences when pasting into Mermaid Live Editor.
 // @author       Codex
 // @match        https://mermaid.live/*
@@ -15,6 +15,8 @@
 
 (function () {
   'use strict';
+
+  const redispatchedPasteEvents = new WeakSet();
 
   function normalizeMermaidMarkdownPaste(text) {
     if (typeof text !== 'string') {
@@ -52,6 +54,47 @@
 
   function shouldHandlePaste(event) {
     return isEditableElement(event.target) || isEditableElement(document.activeElement);
+  }
+
+  function getMonacoPasteTarget(event) {
+    const target = event.target instanceof Element ? event.target : null;
+    if (target && target.closest('.monaco-editor')) {
+      return target;
+    }
+
+    const active = document.activeElement instanceof Element ? document.activeElement : null;
+    if (active && active.closest('.monaco-editor')) {
+      return active;
+    }
+
+    return null;
+  }
+
+  function redispatchPasteToMonaco(text, event) {
+    const target = getMonacoPasteTarget(event);
+    if (!target || typeof DataTransfer !== 'function' || typeof ClipboardEvent !== 'function') {
+      return false;
+    }
+
+    try {
+      // Monaco's native EditContext updates its model from its paste handler,
+      // not from DOM text insertion. Give that handler a cleaned clipboard payload.
+      const clipboardData = new DataTransfer();
+      clipboardData.setData('text/plain', text);
+
+      const cleanedPasteEvent = new ClipboardEvent('paste', {
+        bubbles: true,
+        cancelable: true,
+        clipboardData
+      });
+
+      redispatchedPasteEvents.add(cleanedPasteEvent);
+      target.dispatchEvent(cleanedPasteEvent);
+      return cleanedPasteEvent.defaultPrevented;
+    } catch (error) {
+      console.warn('[Mermaid Live Paste Cleaner] Could not re-dispatch cleaned Monaco paste.', error);
+      return false;
+    }
   }
 
   function insertIntoTextInput(element, text) {
@@ -120,7 +163,7 @@
   }
 
   function handlePaste(event) {
-    if (event.defaultPrevented || !event.clipboardData || !shouldHandlePaste(event)) {
+    if (redispatchedPasteEvents.has(event) || event.defaultPrevented || !event.clipboardData || !shouldHandlePaste(event)) {
       return;
     }
 
@@ -131,6 +174,10 @@
 
     event.preventDefault();
     event.stopImmediatePropagation();
+
+    if (redispatchPasteToMonaco(cleanedText, event)) {
+      return;
+    }
 
     if (!insertCleanedText(cleanedText, event)) {
       console.warn('[Mermaid Live Paste Cleaner] Could not insert cleaned Mermaid text.');
